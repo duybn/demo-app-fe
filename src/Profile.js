@@ -38,16 +38,16 @@ const useStyles = makeStyles((theme) => ({
 export default function Profile() {
   const classes = useStyles();
   const [sharedVideos, setSharedVideos] = useState([]);
-  const cable = ActionCable.createConsumer('ws://localhost:3001/cable');
-  // const [cable, setCable] = useState(ActionCable.createConsumer('ws://localhost:3001/cable'));
+  const cable = ActionCable.createConsumer(`${process.env.REACT_APP_CABLE_URL}`);
   const [youtubeLink, setYoutubeLink] = useState('');
+
   cable.subscriptions.create(
     { channel: 'SharedVideosChannel' },
     { received: sharedVideo => handleReceivedSharedVideo(sharedVideo) }
   )
 
   const fetchSharedVideos = () => {
-    fetch('http://localhost:3001/shared_videos', {
+    fetch(`${process.env.REACT_APP_API_URL}/shared_videos`, {
       method: 'GET',
       headers: {
         'Authorization': localStorage.getItem('accessToken')
@@ -62,12 +62,7 @@ export default function Profile() {
       buttons: false,
       timer: 2000,
     })
-    // setSharedVideos([...sharedVideos, video])
   }
-
-  useEffect(() => {
-    fetchSharedVideos();
-  }, [])
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
@@ -82,7 +77,7 @@ export default function Profile() {
       youtube_url: youtubeLink
     };
 
-    fetch('http://localhost:3001/shared_videos', {
+    fetch(`${process.env.REACT_APP_API_URL}/shared_videos`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -102,6 +97,10 @@ export default function Profile() {
 
     e.target.reset();
   }
+
+  useEffect(() => {
+    fetchSharedVideos();
+  }, [])
 
   return (
     <>

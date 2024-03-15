@@ -45,7 +45,7 @@ async function loginUser(credentials) {
     }
   }
 
-  return fetch('http://localhost:3001/login', {
+  return fetch(`${process.env.REACT_APP_API_URL}/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -59,12 +59,9 @@ async function loginUser(credentials) {
           statusCode: 422
         }
       } else {
-        const email = response.json().then(json => json.status.data.user.email);
-
         return {
           accessToken: accessToken,
           statusCode: 200,
-          userEmail: email
         }
       }
     })
@@ -78,7 +75,7 @@ async function signupUser(credentials) {
     }
   }
 
-  return fetch('http://localhost:3001/signup', {
+  return fetch(`${process.env.REACT_APP_API_URL}/signup`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -92,12 +89,9 @@ async function signupUser(credentials) {
         statusCode: 422
       }
     } else {
-      const email = response.json().then(json => json.status.data.user.email);
-
       return {
         accessToken: accessToken,
         statusCode: 200,
-        userEmail: email
       }
     }
   })
