@@ -15,12 +15,8 @@ function App() {
     <div className="wrapper">
       <BrowserRouter>
         <Routes>
-          <Route path="/profile">
-            <Profile />
-          </Route>
-          <Route path="/">
-            <Profile />
-          </Route>
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/" element={<Profile />} />
         </Routes>
       </BrowserRouter>
     </div>

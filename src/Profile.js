@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+
 import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -9,10 +10,18 @@ import Menu from '@material-ui/core/Menu';
 import Avatar from '@material-ui/core/Avatar';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
+import Button from '@material-ui/core/Button';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import TextField from '@material-ui/core/TextField';
+import CardMedia from '@material-ui/core/CardMedia';
+import Grid from '@material-ui/core/Grid';
+
+import swal from 'sweetalert';
+import ActionCable from 'actioncable';
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    flexGrow: 1,
+    flexGrow: 1
   },
   menuButton: {
     marginRight: theme.spacing(2),
@@ -28,17 +37,37 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Profile() {
   const classes = useStyles();
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const open = Boolean(anchorEl);
-  const user = JSON.parse(localStorage.getItem('user'));
+  const [sharedVideos, setSharedVideos] = useState([]);
+  const cable = ActionCable.createConsumer('ws://localhost:3001/cable');
+  // const [cable, setCable] = useState(ActionCable.createConsumer('ws://localhost:3001/cable'));
+  const [youtubeLink, setYoutubeLink] = useState('');
+  cable.subscriptions.create(
+    { channel: 'SharedVideosChannel' },
+    { received: sharedVideo => handleReceivedSharedVideo(sharedVideo) }
+  )
 
-  const handleMenu = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const fetchSharedVideos = () => {
+    fetch('http://localhost:3001/shared_videos', {
+      method: 'GET',
+      headers: {
+        'Authorization': localStorage.getItem('accessToken')
+      }
+    }).then(res => res.json())
+      .then(data => setSharedVideos(data.shared_videos));
+  }
 
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  const handleReceivedSharedVideo = (video) => {
+    fetchSharedVideos();
+    swal("Success", `A new video has been shared by ${video.user_email}`, "success", {
+      buttons: false,
+      timer: 2000,
+    })
+    // setSharedVideos([...sharedVideos, video])
+  }
+
+  useEffect(() => {
+    fetchSharedVideos();
+  }, [])
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
@@ -46,35 +75,87 @@ export default function Profile() {
     window.location.href = "/";
   };
 
+  const handleShareVideo = (e) => {
+    e.preventDefault();
+
+    const shareVideoObj = {
+      youtube_url: youtubeLink
+    };
+
+    fetch('http://localhost:3001/shared_videos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': localStorage.getItem('accessToken')
+      },
+      body: JSON.stringify(shareVideoObj)
+    }).then(response => {
+      if (response.status == 200) {
+        swal("Success", 'Success', "success", {
+          buttons: false,
+          timer: 2000,
+        })
+      } else {
+        swal("Failed", 'Invalid Youtube link', "error");
+      }
+    });
+
+    e.target.reset();
+  }
+
   return (
-    <div className={classes.root}>
+    <>
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" className={classes.title}>
-            Profile
+            <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </Typography>
-            <div>
-            <IconButton onClick={handleMenu} color="inherit">
-              <Avatar src={user.avatar} />
-            </IconButton>
-            <Menu id="menu-appbar"
-              anchorEl={anchorEl}
-              open={open}
-              onClose={handleClose}
-            >
-              <MenuItem onClick={handleLogout}>Logout</MenuItem>
-            </Menu>
-          </div>
         </Toolbar>
       </AppBar>
+      <form className={classes.form} noValidate onSubmit={handleShareVideo}>
+        <TextField
+          variant="outlined"
+          margin="normal"
+          required
+          fullWidth
+          id="link"
+          name="link"
+          label="Youtube Link"
+          onChange={e => setYoutubeLink(e.target.value)}
+        />
+        <Button
+          type="submit"
+          fullWidth
+          variant="contained"
+          color="primary"
+          className={classes.submit}
+        >
+          Share this video
+        </Button>
+      </form>
       <Card className={classes.root} variant="outlined">
         <CardContent>
-          <Avatar src={user.avatar} className={classes.large} />
-          <Typography variant="h5">
-          Welcome {user.fname} {user.lname}
+          <Typography>
+            Welcome to Youtube sharing videos
           </Typography>
         </CardContent>
       </Card>
-    </div>
+      <Grid sm={3}>
+        {sharedVideos.map((video, i) =>
+          <Card key={i}>
+            <CardContent>
+              <Typography>
+                Shared_by: {video.user_email}
+              </Typography>
+            </CardContent>
+            <CardMedia
+                component='iframe'
+                title='video'
+                src={video.youtube_url}
+            />
+          </Card>
+        )}
+      </Grid>
+    </>
   );
 }

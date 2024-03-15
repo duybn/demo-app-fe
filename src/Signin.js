@@ -38,39 +38,106 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 async function loginUser(credentials) {
-  return fetch('http:/localhost:3000/users/login', {
+  const infos = {
+    "user": {
+      "email": credentials.email,
+      "password": credentials.password
+    }
+  }
+
+  return fetch('http://localhost:3001/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(credentials)
+    body: JSON.stringify(infos)
+  }).then(response => {
+      const accessToken = response.headers.get('Authorization');
+
+      if (response.status != 200) {
+        return {
+          statusCode: 422
+        }
+      } else {
+        const email = response.json().then(json => json.status.data.user.email);
+
+        return {
+          accessToken: accessToken,
+          statusCode: 200,
+          userEmail: email
+        }
+      }
+    })
+}
+
+async function signupUser(credentials) {
+  const infos = {
+    "user": {
+      "email": credentials.email,
+      "password": credentials.password
+    }
+  }
+
+  return fetch('http://localhost:3001/signup', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(infos)
+  }).then(response => {
+    const accessToken = response.headers.get('Authorization');
+
+    if (response.status != 200) {
+      return {
+        statusCode: 422
+      }
+    } else {
+      const email = response.json().then(json => json.status.data.user.email);
+
+      return {
+        accessToken: accessToken,
+        statusCode: 200,
+        userEmail: email
+      }
+    }
   })
-    .then(data => data.json())
  }
 
 export default function Signin() {
   const classes = useStyles();
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
+  const [action, setAction] = useState();
 
-  const handleSubmit = async e => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
-    const response = await loginUser({
-      email,
-      password
-    });
-    if ('accessToken' in response) {
-      swal("Success", response.message, "success", {
+    let response;
+    if (action == 'Sign In') {
+      response = await loginUser({
+        email,
+        password
+      });
+    } else {
+      response = await signupUser({
+        email,
+        password
+      });
+    }
+
+    if (response.statusCode != 200) {
+      swal("Failed", "Invalid mail or password", "error");
+    } else if (response.statusCode == 200) {
+      swal("Success", 'Success', "success", {
         buttons: false,
         timer: 2000,
       })
       .then((value) => {
         localStorage.setItem('accessToken', response['accessToken']);
-        localStorage.setItem('user', JSON.stringify(response['user']));
+        localStorage.setItem('userEmail', response['userEmail']);
         window.location.href = "/profile";
       });
     } else {
-      swal("Failed", response.message, "error");
+      swal("Failed", 'Error', "error");
     }
   }
 
@@ -114,8 +181,20 @@ export default function Signin() {
               variant="contained"
               color="primary"
               className={classes.submit}
+              onClick={e => setAction(e.target.innerHTML)}
             >
               Sign In
+            </Button>
+
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="error"
+              className={classes.submit}
+              onClick={e => setAction(e.target.innerHTML)}
+            >
+              Sign up
             </Button>
           </form>
         </div>
