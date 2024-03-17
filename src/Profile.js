@@ -50,7 +50,7 @@ export default function Profile() {
     fetch(`${process.env.REACT_APP_API_URL}/shared_videos`, {
       method: 'GET',
       headers: {
-        'Authorization': localStorage.getItem('accessToken')
+        'Authorization': localStorage.getItem('ytAccessToken')
       }
     }).then(res => res.json())
       .then(data => setSharedVideos(data.shared_videos));
@@ -65,7 +65,7 @@ export default function Profile() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem("accessToken");
+    localStorage.removeItem("ytAccessToken");
     localStorage.removeItem("user");
     window.location.href = "/";
   };
@@ -81,7 +81,7 @@ export default function Profile() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': localStorage.getItem('accessToken')
+        'Authorization': localStorage.getItem('ytAccessToken')
       },
       body: JSON.stringify(shareVideoObj)
     }).then(response => {

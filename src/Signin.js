@@ -51,20 +51,7 @@ async function loginUser(credentials) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(infos)
-  }).then(response => {
-      const accessToken = response.headers.get('Authorization');
-
-      if (response.status != 200) {
-        return {
-          statusCode: 422
-        }
-      } else {
-        return {
-          accessToken: accessToken,
-          statusCode: 200,
-        }
-      }
-    })
+  })
 }
 
 async function signupUser(credentials) {
@@ -81,19 +68,6 @@ async function signupUser(credentials) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(infos)
-  }).then(response => {
-    const accessToken = response.headers.get('Authorization');
-
-    if (response.status != 200) {
-      return {
-        statusCode: 422
-      }
-    } else {
-      return {
-        accessToken: accessToken,
-        statusCode: 200,
-      }
-    }
   })
  }
 
@@ -105,6 +79,7 @@ export default function Signin() {
 
   const handleSubmit = async(e) => {
     e.preventDefault();
+
     let response;
     if (action == 'Sign In') {
       response = await loginUser({
@@ -118,20 +93,18 @@ export default function Signin() {
       });
     }
 
-    if (response.statusCode != 200) {
+    if (response.status != 200) {
       swal("Failed", "Invalid mail or password", "error");
-    } else if (response.statusCode == 200) {
+    } else {
       swal("Success", 'Success', "success", {
         buttons: false,
         timer: 2000,
       })
       .then((value) => {
-        localStorage.setItem('accessToken', response['accessToken']);
+        localStorage.setItem('ytAccessToken', response.headers.get('Authorization'));
         localStorage.setItem('userEmail', response['userEmail']);
         window.location.href = "/profile";
       });
-    } else {
-      swal("Failed", 'Error', "error");
     }
   }
 

@@ -5,7 +5,7 @@ import Signin from './Signin';
 import Profile from './Profile';
 
 function App() {
-  const token = localStorage.getItem('accessToken');
+  const token = localStorage.getItem('ytAccessToken');
 
   if(!token) {
     return <Signin />
