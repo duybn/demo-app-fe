@@ -139,6 +139,15 @@ export default function Profile() {
           </Typography>
         </CardContent>
       </Card>
+
+      <Card className={classes.root} variant="outlined">
+        <CardContent>
+          <Typography>
+            We only can share Youtube embed video right now(How to get embed link Youtube
+            https://total.wpexplorer.com/docs/get-embed-urllink-youtube-video/)
+          </Typography>
+        </CardContent>
+      </Card>
       <Grid sm={3}>
         {sharedVideos.map((video, i) =>
           <Card key={i}>
