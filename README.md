@@ -16,5 +16,5 @@
 You can change the .env.devlopment to match the url, port of API(local)
 
 # Setup with docker
-`make build`
-`make run`
+1. `make build`
+2. `make run`
