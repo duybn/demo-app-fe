@@ -18,3 +18,6 @@ You can change the .env.devlopment to match the url, port of API(local)
 # Setup with docker
 1. `make build`
 2. `make run`
+
+Open http://localhost:3006/
+(Current, if we need to test 2 users on the same machine, should use incognito mode)
