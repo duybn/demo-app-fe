@@ -14,3 +14,7 @@
 
 ### Usage:
 You can change the .env.devlopment to match the url, port of API(local)
+
+# Setup with docker
+`make build`
+`make run`
