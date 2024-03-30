@@ -16,6 +16,7 @@
 You can change the .env.devlopment to match the url, port of API(local)
 
 # Setup with docker
+(Make sure your BE is ready to use https://github.com/duybn/demo_app?tab=readme-ov-file#setup-with-docker)
 1. `make build`
 2. `make run`
 
